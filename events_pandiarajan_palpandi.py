@@ -1,12 +1,19 @@
 # ============== SELWYN EVENT TICKETING SYSTEM ==============
-# Student Name: 
-# Student ID : 
+# Student Name: Pandiarajan Palpandi
+# Student ID : 1167810
 # ================================================================
  
 from datetime import datetime,timedelta     # datetime module is required for working with dates
 
 # Make the variables and function in set_data.py available in this code (without needing 'set_data.' prefix)
 from set_data import customers,events,unique_id,display_formatted_row   
+
+#Below are the event collection keys to access event informaton
+AGE_LIMIT = 'age_restriction'
+EVENT_DATE = 'event_date'
+CAPACITY = 'capacity'
+TICKETS_SOLD = 'tickets_sold'
+CUSTOMERS = 'customers'
 
 
 def list_all_customers():
@@ -33,6 +40,25 @@ def list_customers_and_tickets():
 def list_event_details():
     """
     List the events, show all details except Customers who have purchased tickets."""
+
+    event_name_arr = []
+    format_str = "{: <30} {: <15} {: <15} {: <10} {: <10}"
+    display_formatted_row(["Event Name","Age Restriction","Event Date","Capacity","Tickets Sold"],format_str)     # Use the display_formatted_row() function to display the column headers with consistent spacing
+    
+
+    #get the event names
+    for event in events:
+        event_name_arr.append(event)
+
+    # sort the names alphanumerically
+    event_name_arr.sort()
+
+    #access nested collection by event name as key (sorted)
+    for event_name in event_name_arr:
+        details = events[event_name]
+        display_formatted_row([event_name, details[AGE_LIMIT], details[EVENT_DATE].strftime("%d %b %Y"), details[CAPACITY], details[TICKETS_SOLD]], format_str)
+        
+    
     input("\nPress Enter to continue.")
 
 def buy_tickets():
@@ -75,7 +101,7 @@ response = ""
 while response != "X":
     disp_menu()
     # Display menu for the first time, and ask for response
-    response = input("Please enter menu choice: ")    
+    response = input("Please enter menu choice: ").upper()
     if response == "1":
         list_all_customers()
     elif response == "2":
