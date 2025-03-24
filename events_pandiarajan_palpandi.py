@@ -22,6 +22,10 @@ EMAIL_PATTERN = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 #properties for collecting user inputs
 user_inputs = {
     'customer_id': 0,
+    'first_name':'',
+    'family_name': '',
+    'dob': date.today(),
+    'email': '',
     'event_name': '',
     'tickets_to_buy': 0,
     'option': '1',
@@ -120,6 +124,8 @@ def list_event_details():
 def buy_tickets():
     """
     Choose a customer, then a future event, the purchase can only proceed if they meet the minimum age requirement and tickets are available """
+    #this will initiate the loop every time the function being called
+    user_inputs["option"] = '1'
     while user_inputs["option"] == '1':
         get_customer_id()
         get_event_name()
@@ -132,54 +138,19 @@ def buy_tickets():
 def add_new_customer():
     """
     Add a new customer to the customer list."""
-    try:
-        format_str = "{: <5} {: <15} {: <15} {: <14} {: <20}"  
-        new_form = ""
-        while new_form != 'X':
-            print("==== New Customer Information Form ===")
-            first_name = input('Please enter first name:\n').strip()
-            while (first_name == ""):
-                print('Invalid input. Please try again!')
-                first_name = input('Please enter first name:\n').strip()
-
-            family_name = input('Please enter family name:\n').strip()
-            while (family_name == ""):
-                print('Invalid input. Please try again!')
-                family_name = input('Please enter family name:\n').strip()
-
-            valid_date = False
-            while valid_date == False:
-                try:
-                    date_of_birth = input('Please enter date of birth in DD-MM-YYYY format:\n').strip()
-                    formated_date = datetime.strptime(date_of_birth, DATE_FORMAT)
-                    valid_date = True
-                except:
-                    print('Invalid input. Please try again!')
-                    valid_date = False
+    #this will initiate the loop every time the function being called
+    user_inputs["option"] = '1'
+    while user_inputs["option"] == '1':
+        print('\nNEW CUSTOMER FORM')
+        get_first_name()
+        get_family_name()
+        get_dob()
+        get_email()
+        save_customer()
+        reset_user_inputs()
+        get_options()
 
 
-
-            valid_email = False
-            while valid_email == False:
-                email_address = input('Please enter email address:\n').strip()
-                valid_email = re.match(EMAIL_PATTERN, email_address) is not None
-                if valid_email != True:
-                    print('Invalid input. Please try again!')
-
-
-            new_customer = [unique_id(), first_name, family_name, date(formated_date.year, formated_date.month, formated_date.day), email_address]
-            customers.append(new_customer)
-            print('\n\n')
-            display_formatted_row(["ID","First Name","Family Name","Birth Date","e-Mail"],format_str)
-            display_formatted_row(new_customer, format_str)
-            print('\nCustomer information added successfully!' )
-            new_form = input("\nPress Enter to add more or press X to return to main menu: ").strip().upper()
-            if (new_form != 'X' and new_form != '' ):
-                print("\n*** Invalid response, please try again.")
-    except:
-        print('Unable to add customer now. Please try again later.')
-
-    # REMOVE this line once you have some function code (a function must have one line of code, so this temporary line keeps Python happy so you can run the code)
 
 def list_future_available_events():
     """
@@ -246,9 +217,91 @@ def reset_option():
 
 def reset_user_inputs():
     user_inputs["customer_id"] = 0
+    user_inputs["first_name"] = ''
+    user_inputs["family_name"] = ''
+    user_inputs["dob"] = date.today()
+    user_inputs["email"] = ''
     user_inputs["event_name"] = ''
     user_inputs["option"] = '1'
     user_inputs["tickets_to_buy"] = 0
+
+def get_first_name():
+    while user_inputs["option"] == '1':
+        first_name = input('\nPlease enter first name: ').strip()
+        if first_name != '':
+            user_inputs["first_name"] = first_name
+            reset_option()
+            break
+        else:
+            print('\nFirst name can not be empty! Please provide a valid first name.')
+            get_options()
+
+def get_family_name():
+    while user_inputs["option"] == '1':
+        family_name = input('\nPlease enter family name: ').strip()
+        if family_name != '':
+            user_inputs["family_name"] = family_name
+            reset_option()
+            break
+        else:
+            print('\nFamily name can not be empty! Please provide a valid family name.')
+            get_options()
+
+def get_email():
+    while user_inputs["option"] == '1':
+        email = input('\nPlease enter email address: ').strip()
+        if email != '':
+            if re.match(EMAIL_PATTERN, email) is not None:
+                user_inputs["email"] = email
+                reset_option()
+                break
+            else:
+                print('\nInvalid email format! Please provide a valid email address.')
+                get_options()
+        else:
+            print('\nEmail address can not be empty! Please provide a valid email address.')
+            get_options()
+
+def get_dob():
+    while user_inputs["option"] == '1':
+        dob = input('\nPlease enter date of birth in (dd/mm/yyyy) format. Example 27/03/1990: ').strip()
+        if dob != '':
+            try:
+                today = datetime.today()
+                formated_date = datetime.strptime(dob, DATE_FORMAT)
+                if formated_date < today:
+                    if get_age(formated_date) < 110:
+                        user_inputs["dob"] = date(formated_date.year, formated_date.month, formated_date.day)                        
+                        break
+                    else:
+                        print('\nInvalid age! Please enter valid date of birth.')
+                        get_options()
+                else:
+                    print('\nInvalid date! Please enter a valid date of birth')
+                    get_options()
+            except:
+                print('\n Invalid date format! Please enter date in dd/mm/yyyy format. Example 24/01/2025')
+                get_options()
+        else:
+            print('\nBirth date can not be empty! Please provide a valid date.')
+            get_options()
+
+def get_age(date_of_birth):
+    today = date.today()
+    age = today.year - date_of_birth.year - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
+    return age
+
+def save_customer():
+    format_str = "{: <5} {: <15} {: <15} {: <14} {: <20}"  
+    new_customer = [int(unique_id()), user_inputs["first_name"], user_inputs["family_name"], user_inputs["dob"], user_inputs["email"]]
+    customers.append(new_customer)
+    print('\n----------------------------------------------------------------------------------------')   
+    display_formatted_row(["ID","First Name","Family Name","Birth Date","e-Mail"],format_str)
+    print('\n----------------------------------------------------------------------------------------')   
+    display_formatted_row(new_customer.copy(), format_str)
+    print('----------------------------------------------------------------------------------------')   
+    print('\nCustomer information added successfully!' )
+    
 
 def get_customer_id():
     while user_inputs["option"] == '1':
