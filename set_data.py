@@ -15,45 +15,45 @@ from datetime import date,datetime,timedelta
 
 events = {
     # 
-    # "Brick Show 25": {
-    #        # age restriction is the integer age limit for attendings the event, ticket purchasers must be at least this old
-    #        "age_restriction":0,
-    #        "event_date":date(2025,7,5),
-    #        "capacity":2000,
-    #         "tickets_sold":18,
-    #         "customers":[(923,2),(810,4),(924,3),(786,9)]},
-    # "Selwyn Sounds 25": {"age_restriction":18,
-    #         "event_date": date(2025,3,1),
-    #         "capacity":1000,
-    #         "tickets_sold":5,
-    #         "customers":[(816,5)]},
-    # "Brick Show 24": {
-    #        # age restriction is the integer age limit for attendings the event, ticket purchasers must be at least this old
-    #        "age_restriction":0,
-    #        "event_date":date(2024,7,13),
-    #        "capacity":2000,
-    #         "tickets_sold":18,
-    #         "customers":[(816,2),(810,5),(786,3),(924,8)]},
-    # "Secret Music 25": {
-    #        # age restriction is the integer age limit for attendings the event, ticket purchasers must be at least this old
-    #        "age_restriction":18,
-    #        "event_date":date(2025,7,21),
-    #        "capacity":10,
-    #         "tickets_sold":10,
-    #         "customers":[(923,2),(786,4),(121,4)]},
+    "Brick Show 25": {
+           # age restriction is the integer age limit for attendings the event, ticket purchasers must be at least this old
+           "age_restriction":0,
+           "event_date":date(2025,7,5),
+           "capacity":2000,
+            "tickets_sold":18,
+            "customers":[(923,2),(810,4),(924,3),(786,9)]},
+    "Selwyn Sounds 25": {"age_restriction":18,
+            "event_date": date(2025,3,1),
+            "capacity":1000,
+            "tickets_sold":5,
+            "customers":[(816,5)]},
+    "Brick Show 24": {
+           # age restriction is the integer age limit for attendings the event, ticket purchasers must be at least this old
+           "age_restriction":0,
+           "event_date":date(2024,7,13),
+           "capacity":2000,
+            "tickets_sold":18,
+            "customers":[(816,2),(810,5),(786,3),(924,8)]},
+    "Secret Music 25": {
+           # age restriction is the integer age limit for attendings the event, ticket purchasers must be at least this old
+           "age_restriction":18,
+           "event_date":date(2025,7,21),
+           "capacity":10,
+            "tickets_sold":10,
+            "customers":[(923,2),(786,4),(121,4)]},
 }
 
 
 # [id, first_name, family_name, birthdate ,email address]
 customers = [ 
-	# [816, 'Simon', 'Charles', date(1952,7,15), 'simon@charles.nz'],
-	# [923, 'Simone', 'Charles', date(1987,9,1), 'simone.charles@kiwi.nz'],
-	# [343, 'Charlie', 'Charles', date(1954,1,25), 'charlie@charles.nz'],
-	# [810, 'Kate', 'McArthur', date(1972,9,30), 'K_McArthur94@gmail.com'],
-	# [786, 'Jack', 'Hopere', date(1980,2,10), 'Jack643@gmail.com'],
-	# [801, 'Chloe', 'Mathewson', date(1980,3,15), 'Chloe572@gmail.com'],
-	# [121, 'Kate', 'McLeod', date(1952,7,15), 'KMcLeod112@gmail.com'],
-    # [924, 'Samantha', 'Charles', date(2013,7,24), 'simone.charles@kiwi.nz']
+	[816, 'Simon', 'Charles', date(1952,7,15), 'simon@charles.nz'],
+	[923, 'Simone', 'Charles', date(1987,9,1), 'simone.charles@kiwi.nz'],
+	[343, 'Charlie', 'Charles', date(1954,1,25), 'charlie@charles.nz'],
+	[810, 'Kate', 'McArthur', date(1972,9,30), 'K_McArthur94@gmail.com'],
+	[786, 'Jack', 'Hopere', date(1980,2,10), 'Jack643@gmail.com'],
+	[801, 'Chloe', 'Mathewson', date(1980,3,15), 'Chloe572@gmail.com'],
+	[121, 'Kate', 'McLeod', date(1952,7,15), 'KMcLeod112@gmail.com'],
+    [924, 'Samantha', 'Charles', date(2013,7,24), 'simone.charles@kiwi.nz']
 ]
 
 
