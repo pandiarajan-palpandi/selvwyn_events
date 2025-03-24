@@ -19,7 +19,7 @@ CUSTOMERS = 'customers'
 DATE_FORMAT = '%d/%m/%Y'
 EMAIL_PATTERN = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 
-#properties for collecting user inputs
+#properties for collecting user inputs - hence making the values globally accessible
 user_inputs = {
     'customer_id': 0,
     'first_name':'',
@@ -29,10 +29,8 @@ user_inputs = {
     'event_name': '',
     'tickets_to_buy': 0,
     'option': '1',
-    'tickets_to_buy': 0
+    'tickets_to_buy': 0,
 }
-
-
 
 
 def list_all_customers():
@@ -41,18 +39,24 @@ def list_all_customers():
     This is an example of how to produce basic output."""
     format_str = "{: <5} {: <15} {: <15} {: <14} {: <20}"  
     print('\nEXISTING CUSTOMER INFORMATION\n')
-    print('----------------------------------------------------------------------------------------')          # Use the same format_str for column headers and rows to ensure consistent spacing. 
+    print('----------------------------------------------------------------------------------------')          
     display_formatted_row(["ID","First Name","Family Name","Birth Date","e-Mail"],format_str)
     print('----------------------------------------------------------------------------------------')
-    # Use the display_formatted_row() function to display the column headers with consistent spacing
-    for customer in customers:
-        id = customer[0]
-        fname = customer[1]
-        famname = customer[2]
-        birthdate = customer[3].strftime("%d %b %Y")
-        email = customer[4]
 
-        display_formatted_row([id,fname,famname,birthdate,email],format_str)     # Use the display_formatted_row() function to display each row with consistent spacing
+    if len(customers) == 0:
+        print('{: >50}'.format('NO CUSTOMER INFORMATION FOUND'))
+        print('----------------------------------------------------------------------------------------\n')
+    else:
+        try:
+            for customer in customers:
+                id = customer[0]
+                fname = customer[1]
+                famname = customer[2]
+                birthdate = customer[3].strftime("%d %b %Y")
+                email = customer[4]
+                display_formatted_row([id,fname,famname,birthdate,email],format_str)
+        except:
+            print('\n Exception occured! Please try again later.')
 
 def list_customers_and_tickets():
     """
@@ -82,8 +86,6 @@ def list_customers_and_tickets():
         event_name_list.sort()
 
         #access nested collection by event name as key (sorted)
-       
-
         print('\n---------------------------------------------------------------------------------------')
         display_formatted_row(["Event Name","Age Restriction","Event Date","Tickets Bought"],format_str_2)
         print('---------------------------------------------------------------------------------------')
@@ -106,51 +108,88 @@ def list_event_details():
     format_str = "{: <30} {: <15} {: <15} {: <10} {: <10}"
     print('\nEVENT DETAILS')
     print('---------------------------------------------------------------------------------------')
-    display_formatted_row(["Event Name","Age Restriction","Event Date","Capacity","Tickets Sold"],format_str)     # Use the display_formatted_row() function to display the column headers with consistent spacing
+    display_formatted_row(["Event Name","Age Restriction","Event Date","Capacity","Tickets Sold"],format_str)
     print('---------------------------------------------------------------------------------------')
 
-    #get the event names
-    event_name_list = list(events.keys())
+    if len(events) > 0:
+        #get the event names
+        event_name_list = list(events.keys())
 
-    # sort the names alphanumerically
-    event_name_list.sort()
+        # sort the names alphanumerically
+        event_name_list.sort()
 
-    #access nested collection by event name as key (sorted)
-    for event_name in event_name_list:
-        details = events[event_name]
-        display_formatted_row([event_name, details[AGE_LIMIT], details[EVENT_DATE].strftime("%d %b %Y"), details[CAPACITY], details[TICKETS_SOLD]], format_str)
-    print('---------------------------------------------------------------------------------------')
+        #access nested collection by event name as key (sorted)
+        for event_name in event_name_list:
+            details = events[event_name]
+            display_formatted_row([event_name, details[AGE_LIMIT], details[EVENT_DATE].strftime("%d %b %Y"), details[CAPACITY], details[TICKETS_SOLD]], format_str)
+        print('---------------------------------------------------------------------------------------')
+    else:
+        print('{: >50}'.format('NO EVENTS DATA FOUND'))
+        print('---------------------------------------------------------------------------------------')
+        
 
 def buy_tickets():
     """
     Choose a customer, then a future event, the purchase can only proceed if they meet the minimum age requirement and tickets are available """
-    #this will initiate the loop every time the function being called
+    #Below line will initiate the loop every time the function being called thus forcing the user to provide option to retry /exit function
     user_inputs["option"] = '1'
     while user_inputs["option"] == '1':
-        get_customer_id()
-        get_event_name()
-        get_tickets_to_buy()
-        book_ticket_for_customer()
-        reset_user_inputs()
-        get_options()
+        try:
+            if check_future_event_availability():
+                get_customer_id()
+                get_event_name()
+                get_tickets_to_buy()
+                book_ticket_for_customer()
+                #Below conditon will check if the code is fall through or the user opted to exit the function (option - 2)
+                if user_inputs["option"] == '1':
+                    reset_user_inputs()
+                    get_options()
+                else:
+                    break
+            else:
+                print('\nNo future events with unsold tickets found!')
+                break
+        except:
+            print('\nException occured! Please try again later.')
+            break
+    #This should reset input fields before exiting the function
+    reset_user_inputs()
 
 
 def add_new_customer():
     """
     Add a new customer to the customer list."""
-    #this will initiate the loop every time the function being called
+    #Below line will initiate the loop every time the function being called thus forcing the user to provide option to retry /exit function
     user_inputs["option"] = '1'
     while user_inputs["option"] == '1':
-        print('\nNEW CUSTOMER FORM')
-        get_first_name()
-        get_family_name()
-        get_dob()
-        get_email()
-        save_customer()
-        reset_user_inputs()
-        get_options()
+        try:
+            print('\nNEW CUSTOMER FORM')
+            get_first_name()
+            get_family_name()
+            get_dob()
+            get_email()
+            save_customer()
+            #Below conditon will check if the code is fall through or the user opted to exit the function (option - 2)
+            if user_inputs["option"] == '1':
+                reset_user_inputs()
+                get_options()
+            else:
+                break
+        except:
+            print('\nException occured! Please try again later.')
+            break
+    #This should reset input fields before exiting the function
+    reset_user_inputs()
 
-
+def check_future_event_availability():
+    foundFutureEvent = False
+    sorted_events = dict(sorted(events.items(), key=lambda event: event[1]['event_date'], reverse = True))
+    for details in sorted_events.values():
+        tickets_available = int(details[CAPACITY]) - int(details[TICKETS_SOLD])
+        if tickets_available > 0 and details[EVENT_DATE] > date.today():
+            foundFutureEvent = True
+            break
+    return foundFutureEvent
 
 def list_future_available_events():
     """
@@ -160,7 +199,7 @@ def list_future_available_events():
     format_str = "{: <30} {: <15} {: <15} {: <10} {: <12} {: <10}"
     print('\nFUTURE EVENT DETAILS')
     print('---------------------------------------------------------------------------------------------------------')
-    display_formatted_row(["Event Name","Age Restriction","Event Date","Capacity","Tickets Sold", "Avaiable Tickets"],format_str)     # Use the display_formatted_row() function to display the column headers with consistent spacing
+    display_formatted_row(["Event Name","Age Restriction","Event Date","Capacity","Tickets Sold", "Avaiable Tickets"],format_str)
     print('---------------------------------------------------------------------------------------------------------')
     #sorting the events by event_date 
     sorted_events = dict(sorted(events.items(), key=lambda event: event[1]['event_date'], reverse = True))
@@ -181,6 +220,7 @@ def event_exists():
 def is_customer_allowed():
     allowed = False
     try:
+        #Below line will gather all ids from the customers list from 0 index position and creates a list
         customers_ids = list(zip(*customers))[0]
         customer = customers[customers_ids.index(int(user_inputs["customer_id"]))]
         birth = customer[3]
@@ -198,19 +238,26 @@ def is_customer_allowed():
         return allowed
 
 def get_options():
-    valid_response = False
-    options = ['1','2']
-    while valid_response == False:
+    selected = False
+    while selected == False:
+        options = ['1','2']
         print("\n==== SELECT OPTIONS FROM BELOW ===")
+        # Try again option is for both repeating last action and repeat last function
         print(" 1 - Try Again")
+        # Below will get the user out of current operation and show main menu
         print(" 2 - Return to Main Menu")
         selection =  input("\nPlease enter menu choice: ").strip().upper()
         if options.count(selection) > 0:
-            valid_response = True
             user_inputs["option"] = selection
+            selected = True
+            break
         else:
-            valid_response = False
+            selected = False
             print('\nInvalid Selection! PLease provde valid option from the list.')
+
+def exit_operation():
+    user_inputs["option"] = ''
+    reset_user_inputs()
 
 def reset_option():
     user_inputs["option"] == '1'
@@ -222,7 +269,7 @@ def reset_user_inputs():
     user_inputs["dob"] = date.today()
     user_inputs["email"] = ''
     user_inputs["event_name"] = ''
-    user_inputs["option"] = '1'
+    user_inputs["option"] = ''
     user_inputs["tickets_to_buy"] = 0
 
 def get_first_name():
@@ -264,7 +311,7 @@ def get_email():
 
 def get_dob():
     while user_inputs["option"] == '1':
-        dob = input('\nPlease enter date of birth in (dd/mm/yyyy) format. Example 27/03/1990: ').strip()
+        dob = input('\nPlease enter date of birth in (dd/mm/yyyy) format. Example 24/01/2025: ').strip()
         if dob != '':
             try:
                 today = datetime.today()
@@ -274,10 +321,10 @@ def get_dob():
                         user_inputs["dob"] = date(formated_date.year, formated_date.month, formated_date.day)                        
                         break
                     else:
-                        print('\nInvalid age! Please enter valid date of birth.')
+                        print('\nInvalid age! Customer age can not exceed 110. Please enter valid date of birth.')
                         get_options()
                 else:
-                    print('\nInvalid date! Please enter a valid date of birth')
+                    print('\nInvalid date! Date is in future. Please enter a valid date of birth')
                     get_options()
             except:
                 print('\n Invalid date format! Please enter date in dd/mm/yyyy format. Example 24/01/2025')
@@ -292,15 +339,16 @@ def get_age(date_of_birth):
     return age
 
 def save_customer():
-    format_str = "{: <5} {: <15} {: <15} {: <14} {: <20}"  
-    new_customer = [int(unique_id()), user_inputs["first_name"], user_inputs["family_name"], user_inputs["dob"], user_inputs["email"]]
-    customers.append(new_customer)
-    print('\n----------------------------------------------------------------------------------------')   
-    display_formatted_row(["ID","First Name","Family Name","Birth Date","e-Mail"],format_str)
-    print('\n----------------------------------------------------------------------------------------')   
-    display_formatted_row(new_customer.copy(), format_str)
-    print('----------------------------------------------------------------------------------------')   
-    print('\nCustomer information added successfully!' )
+    if user_inputs["option"] == '1':
+        format_str = "{: <5} {: <15} {: <15} {: <14} {: <20}"  
+        new_customer = [int(unique_id()), user_inputs["first_name"], user_inputs["family_name"], user_inputs["dob"], user_inputs["email"]]
+        customers.append(new_customer)
+        print('\n----------------------------------------------------------------------------------------')   
+        display_formatted_row(["ID","First Name","Family Name","Birth Date","e-Mail"],format_str)
+        print('\n----------------------------------------------------------------------------------------')   
+        display_formatted_row(new_customer.copy(), format_str)
+        print('----------------------------------------------------------------------------------------')   
+        print('\nCustomer information added successfully!' )
     
 
 def get_customer_id():
@@ -324,17 +372,23 @@ def get_customer_id():
 
 def get_event_name():
     while user_inputs["option"] == '1':
-        list_future_available_events()
-        user_inputs["event_name"] = input('\nPlease enter the event name to buy ticket: ').strip()
-        if event_exists():
-            if is_customer_allowed():
-                break
+        event_exists = list_future_available_events()
+        if event_exists == True:
+            user_inputs["event_name"] = input('\nPlease enter the event name to buy ticket: ').strip()
+            if event_exists:
+                if is_customer_allowed():
+                    break
+                else:
+                    print('\nCustomer does not meet the age criteria! Hence can not book the event.')
+                    get_options()
             else:
-                print('\nCustomer does not meet the age criteria! Hence can not book the event.')
+                print('\nEvent not found! Please provide a valid event name.')
                 get_options()
         else:
-            print('\nEvent not found! Please provide a valid event name.')
-            get_options()
+            print('\nNo future events found! Exiting ticket booking... ')
+            exit_operation()
+            break
+
 
 
 def get_tickets_to_buy():
@@ -404,18 +458,14 @@ while response != "X":
     response = input("Please enter menu choice: ").upper()
     if response == "1":
         list_all_customers()
-        input("\nPress Enter to continue.")
     elif response == "2":
         list_customers_and_tickets()
-        input("\nPress Enter to continue.")
     elif response == "3":
         list_event_details()
-        input("\nPress Enter to continue.")
     elif response == "4":
         buy_tickets()
     elif response == "5":
         list_future_available_events()
-        input("\nPress Enter to continue.")
     elif response == "6":
         add_new_customer()
     elif response != "X":
