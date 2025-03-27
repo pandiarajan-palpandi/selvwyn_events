@@ -135,7 +135,8 @@ def buy_tickets():
     user_inputs["option"] = '1'
     while user_inputs["option"] == '1':
         try:
-            if check_future_event_availability():
+            future_events = get_future_event_list()
+            if  len(future_events)> 0:
                 get_customer_id()
                 get_event_name()
                 get_tickets_to_buy()
@@ -181,15 +182,6 @@ def add_new_customer():
     #This should reset input fields before exiting the function
     reset_user_inputs()
 
-def check_future_event_availability():
-    foundFutureEvent = False
-    sorted_events = dict(sorted(events.items(), key=lambda event: event[1]['event_date'], reverse = True))
-    for details in sorted_events.values():
-        tickets_available = int(details[CAPACITY]) - int(details[TICKETS_SOLD])
-        if tickets_available > 0 and details[EVENT_DATE] > date.today():
-            foundFutureEvent = True
-            break
-    return foundFutureEvent
 
 def list_future_available_events():
     """
@@ -201,21 +193,31 @@ def list_future_available_events():
     print('---------------------------------------------------------------------------------------------------------')
     display_formatted_row(["Event Name","Age Restriction","Event Date","Capacity","Tickets Sold", "Avaiable Tickets"],format_str)
     print('---------------------------------------------------------------------------------------------------------')
-    #sorting the events by event_date 
-    sorted_events = dict(sorted(events.items(), key=lambda event: event[1]['event_date'], reverse = True))
-    for event_name, details in sorted_events.items():
-        tickets_available = int(details[CAPACITY]) - int(details[TICKETS_SOLD])
-        #Listing only future events if tickets available to buy
-        if tickets_available > 0 and details[EVENT_DATE] > date.today():
-            display_formatted_row([event_name, details[AGE_LIMIT], details[EVENT_DATE].strftime("%d %b %Y"), details[CAPACITY], details[TICKETS_SOLD], tickets_available], format_str)
-            foundFutureEvent = True
-    if foundFutureEvent == False:
-        print('{: >70}'.format('NO FUTURE EVENTS WITH UNSOLD TICKETS FOUND'))
-    print('---------------------------------------------------------------------------------------------------------')
-    return foundFutureEvent     
 
-def event_exists():
+    future_events_sorted = get_future_event_list()
+
+    if len(future_events_sorted) > 0:
+        for event in future_events_sorted:
+            display_formatted_row(event, format_str)
+            print('---------------------------------------------------------------------------------------------------------') 
+    else:
+        print('{: >70}'.format('NO FUTURE EVENTS WITH UNSOLD TICKETS FOUND'))
+        print('---------------------------------------------------------------------------------------------------------')     
+
+def is_event_exists():
     return events.get(user_inputs["event_name"]) != None
+
+def is_future_event_exists():
+    try:
+        future_events = get_future_event_list()
+        if len(future_events) > 0:
+            events = list(zip(*future_events))[0]
+            return events.count(user_inputs["event_name"]) > 0
+        else:
+            return False
+    except:
+        print('\nException Occurred! Please try again later')
+        return False
 
 def is_customer_allowed():
     allowed = False
@@ -300,8 +302,11 @@ def get_email():
         if email != '':
             if re.match(EMAIL_PATTERN, email) is not None:
                 user_inputs["email"] = email
-                reset_option()
-                break
+                if is_email_available():
+                    reset_option()
+                    break
+                else:
+                    print('\nEmail address already exists! Please enter a different email address.')
             else:
                 print('\nInvalid email format! Please provide a valid email address.')
                 get_options()
@@ -372,17 +377,18 @@ def get_customer_id():
 
 def get_event_name():
     while user_inputs["option"] == '1':
-        event_exists = list_future_available_events()
-        if event_exists == True:
+        list_future_available_events()
+        future_events = get_future_event_list()
+        if len(future_events) > 0:
             user_inputs["event_name"] = input('\nPlease enter the event name to buy ticket: ').strip()
-            if event_exists:
+            if is_future_event_exists():
                 if is_customer_allowed():
                     break
                 else:
                     print('\nCustomer does not meet the age criteria! Hence can not book the event.')
                     get_options()
             else:
-                print('\nEvent not found! Please provide a valid event name.')
+                print('\nEvent not found! Please provide a valid future event name.')
                 get_options()
         else:
             print('\nNo future events found! Exiting ticket booking... ')
@@ -431,7 +437,27 @@ def update_customer_booking(customer_and_tickets, updated_count):
     customer_and_tickets.append((user_inputs["customer_id"], updated_count))
     events[user_inputs["event_name"]]['tickets_sold'] = events[user_inputs["event_name"]]['tickets_sold'] +  user_inputs["tickets_to_buy"]
 
+def get_future_event_list():
+    future_events = []
+    #sorting the events by event_date 
+    sorted_events = dict(sorted(events.items(), key=lambda event: event[1]['event_date'], reverse = True))
+    for event_name, details in sorted_events.items():
+        tickets_available = int(details[CAPACITY]) - int(details[TICKETS_SOLD])
+        #Listing only future events if tickets available to buy
+        if tickets_available > 0 and details[EVENT_DATE] > date.today():
+            future_events.append([event_name, details[AGE_LIMIT], details[EVENT_DATE].strftime("%d %b %Y"), details[CAPACITY], details[TICKETS_SOLD], tickets_available])
+    return future_events
 
+def is_email_available():
+    try:
+        email_list = list(zip(*customers))[4]
+        if email_list.count(user_inputs["email"]) > 0:
+            return False
+        else:
+            return True
+    except:
+        print('\nException occurred! Please try again later')
+        return False
 
 def disp_menu():
     """
@@ -458,14 +484,18 @@ while response != "X":
     response = input("Please enter menu choice: ").upper()
     if response == "1":
         list_all_customers()
+        input("\nPress Enter to continue.")
     elif response == "2":
         list_customers_and_tickets()
+        input("\nPress Enter to continue.")
     elif response == "3":
         list_event_details()
+        input("\nPress Enter to continue.")
     elif response == "4":
         buy_tickets()
     elif response == "5":
         list_future_available_events()
+        input("\nPress Enter to continue.")
     elif response == "6":
         add_new_customer()
     elif response != "X":
